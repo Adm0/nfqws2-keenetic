@@ -1,0 +1,310 @@
+# Keenetic policy mark
+POLICY_MARK=
+# Marks for excliude packets
+MARK_EXCLUDE="0x20000000/0x20000000"
+MARK_PROCESSED="0x40000000/0x40000000"
+
+source "$CONFFILE"
+if [ -f "$CONFFILE.run" ]; then
+  source "$CONFFILE.run"
+fi
+
+_RULE_EXCLUDE_POLICY() {
+  local PROTO=$1 # tcp or udp
+  local PORTS=$2 # 80,443
+
+  local START="POSTROUTING -o $IFACE -t mangle -p $PROTO -m multiport --dports $PORTS -m mark"
+  local END="--mark $POLICY_MARK -j MARK --set-xmark $MARK_EXCLUDE"
+
+  # Set exclude mark for policy
+  if [ -n "$POLICY_EXCLUDE" ] && [ "$POLICY_EXCLUDE" -ne "0" ]; then
+    echo "$START $END"
+  else
+    echo "$START ! $END"
+  fi
+}
+
+_RULE_EXCLUDE_PROCESSED() {
+  local PROTO=$1 # tcp or udp
+  local PORTS=$2 # 80,443
+
+  # Set exclude mark for already processed packets
+  echo "POSTROUTING -o $IFACE -t mangle -p $PROTO -m multiport --dports $PORTS -m mark --mark $MARK_PROCESSED -j MARK --set-xmark $MARK_EXCLUDE"
+}
+
+_RULE_NFQWS() {
+  local PROTO=$1 # tcp or udp
+  local PORTS=$2 # 80,443
+
+  # Main NFQUEUE rule
+  echo "POSTROUTING -o $IFACE -t mangle -p $PROTO -m multiport --dports $PORTS -m connbytes --connbytes-dir=original --connbytes-mode=packets --connbytes 1:12 -m mark ! --mark $MARK_EXCLUDE -j NFQUEUE --queue-num $NFQUEUE_NUM --queue-bypass"
+}
+
+_RULE_MASQ() {
+  echo "POSTROUTING -o $IFACE -t nat -p udp -m mark --mark $MARK_PROCESSED -j MASQUERADE"
+}
+
+is_running() {
+  PID_RUNNING=$(pgrep -nf "$NFQWS_BIN" 2>/dev/null)
+
+  if [ -z "$PID_RUNNING" ]; then
+    return 1
+  fi
+
+  if [ ! -f "$PIDFILE" ]; then
+    return 1
+  fi
+
+  PID_SAVED=$(cat "$PIDFILE" 2>/dev/null)
+  if [ "$PID_RUNNING" -ne "$PID_SAVED" ]; then
+    return 1
+  fi
+
+  if ! kill -0 $PID_SAVED; then
+    return 1
+  fi
+
+  # 0 = true, 1 = false
+  return 0
+}
+
+status_service() {
+  if is_running; then
+    echo 'Service NFQWS2 is running'
+  else
+    echo 'Service NFQWS2 is stopped'
+  fi
+}
+
+reload_service() {
+  if ! is_running; then
+    echo 'Service NFQWS2 is not running' >&2
+    return 1
+  fi
+
+  echo 'Reloading NFQWS2 service...'
+  kill -1 $(cat "$PIDFILE")
+}
+
+validate_config() {
+#  TODO:
+#  if [[ "$NFQWS_ARGS" =~ "--new" ]]; then
+#    echo "Using --new in NFQWS_ARGS is not allowed. Use NFQWS_ARGS_CUSTOM instead"
+#    return 1
+#  fi
+#  if [[ "$NFQWS_ARGS_QUIC" =~ "--new" ]]; then
+#    echo "Using --new in NFQWS_ARGS_QUIC is not allowed. Use NFQWS_ARGS_CUSTOM instead"
+#    return 1
+#  fi
+#  if [[ "$NFQWS_ARGS_UDP" =~ "--new" ]]; then
+#    echo "Using --new in NFQWS_ARGS_UDP is not allowed. Use NFQWS_ARGS_CUSTOM instead"
+#    return 1
+#  fi
+#  if [[ "$NFQWS_EXTRA_ARGS" =~ "--new" ]]; then
+#    echo "Using --new in NFQWS_EXTRA_ARGS is not allowed. Use NFQWS_ARGS_CUSTOM instead"
+#    return 1
+#  fi
+#  if [[ "$NFQWS_ARGS_IPSET" =~ "--new" ]]; then
+#    echo "Using --new in NFQWS_ARGS_IPSET is not allowed. Use NFQWS_ARGS_CUSTOM instead"
+#    return 1
+#  fi
+}
+
+create_running_config() {
+  local MARK=$(/bin/ndmc -c show ip policy 2>&1 | grep -i "description = $POLICY_NAME:" -A 1 | grep 'mark:' | grep -o '[^ ]*$' | head -n 1)
+  if [ -n "$MARK" ]; then
+    POLICY_MARK="0x$MARK/0x0fffffff"
+    if [ -n "$POLICY_EXCLUDE" ] && [ "$POLICY_EXCLUDE" -ne "0" ]; then
+      echo "Found policy '$POLICY_NAME'. Traffic from it will be excluded from processing."
+    else
+      echo "Found policy '$POLICY_NAME'. Only traffic from it will be processed."
+    fi
+  else
+    POLICY_MARK=""
+  fi
+
+  echo "ISP_INTERFACE=\"$ISP_INTERFACE\"" > "$CONFFILE.run"
+  echo "IPV6_ENABLED=$IPV6_ENABLED" >> "$CONFFILE.run"
+  echo "TCP_PORTS=$TCP_PORTS" >> "$CONFFILE.run"
+  echo "UDP_PORTS=$UDP_PORTS" >> "$CONFFILE.run"
+  echo "POLICY_NAME=\"$POLICY_NAME\"" >> "$CONFFILE.run"
+  echo "POLICY_EXCLUDE=$POLICY_EXCLUDE" >> "$CONFFILE.run"
+  echo "POLICY_MARK=\"$POLICY_MARK\"" >> "$CONFFILE.run"
+  echo "NFQUEUE_NUM=$NFQUEUE_NUM" >> "$CONFFILE.run"
+}
+
+remove_running_config() {
+  rm -f "$CONFFILE.run"
+  source "$CONFFILE"
+}
+
+kernel_modules() {
+  KERNEL=$(uname -r)
+
+  # Try to load all modules (OpenWRT or Padavan)
+  modprobe -a -q nfnetlink_queue xt_multiport xt_connbytes xt_NFQUEUE &> /dev/null
+
+  if [ -z "$(lsmod 2>/dev/null | grep "nfnetlink_queue ")" ]; then
+    nfnetlink_mod_path=$(find "/lib/modules/$KERNEL" -name "nfnetlink_queue.ko*")
+
+    if [ -n "$nfnetlink_mod_path" ]; then
+      insmod "$nfnetlink_mod_path" &> /dev/null
+      echo "nfnetlink_queue.ko loaded"
+    else
+      echo "Cannot find nfnetlink_queue.ko module"
+    fi
+  fi
+
+  if [ -z "$(lsmod 2>/dev/null | grep "xt_multiport ")" ]; then
+    multiport_mod_path=$(find "/lib/modules/$KERNEL" -name "xt_multiport.ko*")
+
+    if [ -n "$multiport_mod_path" ]; then
+      insmod "$multiport_mod_path" &> /dev/null
+      echo "xt_multiport.ko loaded"
+    else
+      echo "Cannot find xt_multiport.ko module"
+    fi
+  fi
+
+  if [ -z "$(lsmod 2>/dev/null | grep "xt_connbytes ")" ]; then
+    connbytes_mod_path=$(find "/lib/modules/$KERNEL" -name "xt_connbytes.ko*")
+
+    if [ -n "$connbytes_mod_path" ]; then
+      insmod "$connbytes_mod_path" &> /dev/null
+      echo "xt_connbytes.ko loaded"
+    else
+      echo "Cannot find xt_connbytes.ko module"
+    fi
+  fi
+
+  if [ -z "$(lsmod 2>/dev/null | grep "xt_NFQUEUE ")" ]; then
+    nfqueue_mod_path=$(find "/lib/modules/$KERNEL" -name "xt_NFQUEUE.ko*")
+
+    if [ -n "$nfqueue_mod_path" ]; then
+      insmod "$nfqueue_mod_path" &> /dev/null
+      echo "xt_NFQUEUE.ko loaded"
+    else
+      echo "Cannot find xt_NFQUEUE.ko module"
+    fi
+  fi
+}
+
+_startup_args() {
+  local args="--user=$USER --qnum=$NFQUEUE_NUM"
+
+  # Fix bind multiple interfaces
+  local iface_count=$(echo $ISP_INTERFACE | wc -w)
+  if [ "$iface_count" -gt "1" ]; then
+    args="$args --bind-fix4"
+    if [ -n "$IPV6_ENABLED" ] && [ "$IPV6_ENABLED" -ne "0" ]; then
+      args="$args --bind-fix6"
+    fi
+  fi
+
+  # Logging
+  if [ "$LOG_LEVEL" -eq "1" ]; then
+    args="--debug=syslog $args"
+  fi
+
+  # Custom args
+  if [ -n "$NFQWS_ARGS_CUSTOM" ]; then
+    args="$args $NFQWS_ARGS_CUSTOM --new"
+  fi
+
+  # UDP
+  if [ -n "$NFQWS_ARGS_UDP" ]; then
+    args="$args $NFQWS_ARGS_UDP --new"
+  fi
+
+  # QUIC
+  if [ -n "$NFQWS_ARGS_QUIC" ]; then
+    if [ -n "$NFQWS_ARGS_IPSET" ]; then
+      args="$args $NFQWS_ARGS_QUIC $NFQWS_ARGS_IPSET --ipset-ip=0.0.0.0 --new"
+    fi
+    args="$args $NFQWS_ARGS_QUIC $NFQWS_EXTRA_ARGS --new"
+  fi
+
+  # HTTP(S)
+  if [ -n "$NFQWS_ARGS_IPSET" ]; then
+    args="$args $NFQWS_ARGS $NFQWS_ARGS_IPSET --ipset-ip=0.0.0.0 --new"
+  fi
+  args="$args $NFQWS_ARGS $NFQWS_EXTRA_ARGS"
+
+  echo "$args"
+}
+
+_firewall() {
+  local CMD=$1 # iptables or ip6tables
+  local ACTION=$2 # -I, -A, -D
+  shift 2
+  local RULE="$@"
+
+  $CMD -C $RULE 2>/dev/null
+  exists=$? # 0 = true
+
+  if [ "$ACTION" == "-A" ] || [ "$ACTION" == "-I" ]; then
+    if [ $exists -ne 0 ]; then
+      $CMD -w $ACTION $RULE
+    fi
+  elif [ "$ACTION" == "-D" ] && [ $exists -eq 0 ]; then
+    $CMD -w $ACTION $RULE
+  fi
+}
+
+_firewall_start_stop() {
+  local CMD=$1 # iptables or ip6tables
+  local ACTION=$2 # -I, -A, -D
+
+  for IFACE in $ISP_INTERFACE; do
+    if [ -n "$UDP_PORTS" ]; then
+      if [ -n "$POLICY_MARK" ]; then
+        _firewall $CMD $ACTION "$(_RULE_EXCLUDE_POLICY udp $UDP_PORTS)"
+      fi
+      _firewall $CMD $ACTION "$(_RULE_EXCLUDE_PROCESSED udp $UDP_PORTS)"
+      _firewall $CMD $ACTION "$(_RULE_NFQWS udp $UDP_PORTS)"
+      if [ "$CMD" == "iptables" ]; then
+        _firewall $CMD $ACTION "$(_RULE_MASQ)"
+      fi
+    fi
+
+    if [ -n "$TCP_PORTS" ]; then
+      if [ -n "$POLICY_MARK" ]; then
+        _firewall $CMD $ACTION "$(_RULE_EXCLUDE_POLICY tcp $TCP_PORTS)"
+      fi
+      _firewall $CMD $ACTION "$(_RULE_EXCLUDE_PROCESSED tcp $TCP_PORTS)"
+      _firewall $CMD $ACTION "$(_RULE_NFQWS tcp $TCP_PORTS)"
+    fi
+  done
+}
+
+_firewall_start_stop_v4() {
+  local ACTION=$1 # -I, -A, -D
+  _firewall_start_stop iptables $ACTION
+}
+
+_firewall_start_stop_v6() {
+  if [ -z "$IPV6_ENABLED" ] || [ "$IPV6_ENABLED" -eq "0" ]; then
+    return
+  fi
+
+  local ACTION=$1 # -I, -A, -D
+  _firewall_start_stop ip6tables $ACTION
+}
+
+firewall_iptables() {
+  _firewall_start_stop_v4 -A
+}
+
+firewall_ip6tables() {
+  _firewall_start_stop_v6 -A
+}
+
+firewall_stop() {
+  _firewall_start_stop_v4 -D
+  _firewall_start_stop_v6 -D
+}
+
+system_config() {
+  sysctl -w net.netfilter.nf_conntrack_checksum=0 &> /dev/null
+  sysctl -w net.netfilter.nf_conntrack_tcp_be_liberal=1 &> /dev/null
+}
