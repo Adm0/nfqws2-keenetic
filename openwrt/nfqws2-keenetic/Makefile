@@ -78,5 +78,5 @@ endef
 
 
 $(eval $(call BuildPackage,nfqws2-keenetic))
-$(eval $(call BuildPackage,nfqws2-keenetic-web))
+# $(eval $(call BuildPackage,nfqws2-keenetic-web))
 
