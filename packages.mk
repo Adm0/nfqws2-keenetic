@@ -10,8 +10,8 @@ _download_bins:
 	mkdir -p out/zapret2
 	curl -sSL $(TARGET_URL) -o out/zapret2.tar.gz
 	tar -C out/zapret2 -xzf "out/zapret2.tar.gz"
-	cd out/zapret2/*/; mv binaries/ ../; cd ..
-	cd out/zapret2/*/; mv lua/ ../; cd ..
+	cd out/zapret2/*/; mv binaries/ ../; cd ../../..
+	cd out/zapret2/*/; mv lua/ ../; cd ../../..
 
 _conffiles:
 	cp common/ipk/conffiles out/$(BUILD_DIR)/control/conffiles
@@ -53,7 +53,6 @@ _binary:
 	chmod +x out/$(BUILD_DIR)/data$(ROOT_DIR)/usr/bin/nfqws2
 
 _lua:
-	mkdir -p out/$(BUILD_DIR)/data$(ROOT_DIR)/etc/nfqws2/lua
 	cp -r out/zapret2/lua out/$(BUILD_DIR)/data$(ROOT_DIR)/etc/nfqws2/lua
 
 _binary-multi:
