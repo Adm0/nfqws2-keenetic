@@ -10,8 +10,8 @@ _download_bins:
 	mkdir -p out/zapret2
 	curl -sSL $(TARGET_URL) -o out/zapret2.tar.gz
 	tar -C out/zapret2 -xzf "out/zapret2.tar.gz"
-	cd out/zapret2/*/; mv binaries/ ../; cd ../../..
-	cd out/zapret2/*/; mv lua/ ../; cd ../../..
+	cd out/zapret2/zapret2-*/; mv binaries/ ../; cd ../../..
+	cd out/zapret2/zapret2-*/; mv lua/ ../; cd ../../..
 
 _conffiles:
 	cp common/ipk/conffiles out/$(BUILD_DIR)/control/conffiles
