@@ -53,7 +53,7 @@ _binary:
 	chmod +x out/$(BUILD_DIR)/data$(ROOT_DIR)/usr/bin/nfqws2
 
 _lua:
-    cp -r out/zapret2/lua out/$(BUILD_DIR)/data$(ROOT_DIR)/etc/nfqws2/lua
+	cp -r out/zapret2/lua out/$(BUILD_DIR)/data$(ROOT_DIR)/etc/nfqws2/lua
 
 _binary-multi:
 	mkdir -p out/$(BUILD_DIR)/data$(ROOT_DIR)/usr/bin
