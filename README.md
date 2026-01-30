@@ -1,14 +1,16 @@
-# nfqws-keenetic
+# nfqws2-keenetic
 
-[![GitHub Release](https://img.shields.io/github/release/Anonym-tsk/nfqws-keenetic?style=flat&color=green)](https://github.com/Anonym-tsk/nfqws-keenetic/releases)
-[![GitHub Stars](https://img.shields.io/github/stars/Anonym-tsk/nfqws-keenetic?style=flat)](https://github.com/Anonym-tsk/nfqws-keenetic/stargazers)
-[![License](https://img.shields.io/github/license/Anonym-tsk/nfqws-keenetic.svg?style=flat&color=orange)](LICENSE)
+[![GitHub Release](https://img.shields.io/github/release/nfqws/nfqws2-keenetic?style=flat&color=green)](https://github.com/nfqws/nfqws2-keenetic/releases)
+[![GitHub Stars](https://img.shields.io/github/stars/nfqws/nfqws2-keenetic?style=flat)](https://github.com/nfqws/nfqws2-keenetic/stargazers)
+[![License](https://img.shields.io/github/license/nfqws/nfqws2-keenetic.svg?style=flat&color=orange)](LICENSE)
 [![CloudTips](https://img.shields.io/badge/donate-CloudTips-598bd7.svg?style=flat)](https://pay.cloudtips.ru/p/054d0666)
 [![YooMoney](https://img.shields.io/badge/donate-YooMoney-8037fd.svg?style=flat)](https://yoomoney.ru/to/410019180291197)
 [![Join Telegram group](https://img.shields.io/badge/Telegram_group-Join-blue.svg?style=social&logo=telegram)](https://t.me/nfqws)
-[![Ask DeepWiki](https://deepwiki.com/badge.svg)](https://deepwiki.com/Anonym-tsk/nfqws-keenetic)
+[![Ask DeepWiki](https://deepwiki.com/badge.svg)](https://deepwiki.com/nfqws/nfqws2-keenetic)
 
-Пакеты для установки `nfqws` на маршрутизаторы.
+Пакеты для установки `nfqws2` на маршрутизаторы.
+
+Новая улучшенная версия [`nfqws-keenetic`](https://github.com/Anonym-tsk/nfqws-keenetic)
 
 > [!IMPORTANT]
 > Данный материал подготовлен в научно-технических целях.
@@ -24,7 +26,7 @@
 Изначально написано для роутеров Keenetic/Netcraze с установленным entware.
 Однако, работоспособность также была проверена на прошивках Padavan и OpenWRT (читайте ниже).
 
-Списки проверенного оборудования собираем в [отдельной теме](https://github.com/Anonym-tsk/nfqws-keenetic/discussions/1).
+Списки проверенного оборудования собираем в [отдельной теме](https://github.com/nfqws/nfqws2-keenetic/discussions/1).
 <details>
   <summary>Собранный список моделей из темы</summary>
  
@@ -95,13 +97,13 @@
 
 </details>
 
-Поделиться опытом можно в разделе [Discussions](https://github.com/Anonym-tsk/nfqws-keenetic/discussions) или в [чате](https://t.me/nfqws).
+Поделиться опытом можно в разделе [Discussions](https://github.com/nfqws/nfqws2-keenetic/discussions) или в [чате](https://t.me/nfqws).
 
 ### Что это?
 
-`nfqws` - утилита для модификации TCP соединения на уровне пакетов, работает через обработчик очереди NFQUEUE и raw сокеты.
+`nfqws2` - утилита для модификации TCP соединения на уровне пакетов, работает через обработчик очереди NFQUEUE и raw сокеты.
 
-Почитать подробнее можно на [странице авторов](https://github.com/bol-van/zapret) (ищите по ключевому слову `nfqws`).
+Почитать подробнее можно на [странице авторов](https://github.com/bol-van/zapret2).
 
 ### Подготовка Keenetic/Netcraze
 
@@ -135,7 +137,7 @@
 2. Установите opkg-репозиторий в систему
    ```bash
    mkdir -p /opt/etc/opkg
-   echo "src/gz nfqws-keenetic https://anonym-tsk.github.io/nfqws-keenetic/all" > /opt/etc/opkg/nfqws-keenetic.conf
+   echo "src/gz nfqws2-keenetic https://nfqws.github.io/nfqws2-keenetic/all" > /opt/etc/opkg/nfqws2-keenetic.conf
    ```
    Репозиторий универсальный, поддерживаемые архитектуры: `mipsel`, `mips`, `mips64`, `aarch64`, `armv7`, `x86`, `x86_64`, `lexra`.
 
@@ -145,71 +147,51 @@
      - `mips-3.4` <sub><sup>Keenetic Giga SE (KN-2410), Ultra SE (KN-2510), DSL (KN-2010), Launcher DSL (KN-2012), Duo (KN-2110), Skipper DSL (KN-2112), Hopper DSL (KN-3610); Zyxel Keenetic DSL, LTE, VOX</sup></sub>
        ```bash
        mkdir -p /opt/etc/opkg
-       echo "src/gz nfqws-keenetic https://anonym-tsk.github.io/nfqws-keenetic/mips" > /opt/etc/opkg/nfqws-keenetic.conf
+       echo "src/gz nfqws2-keenetic https://nfqws.github.io/nfqws2-keenetic/mips" > /opt/etc/opkg/nfqws2-keenetic.conf
        ```
 
      - `mipsel-3.4` <sub><sup>Keenetic 4G (KN-1212), Omni (KN-1410), Extra (KN-1710/1711/1713), Giga (KN-1010/1011), Ultra (KN-1810), Viva (KN-1910/1912/1913), Hero 4G (KN-2310/2311), Giant (KN-2610), Skipper 4G (KN-2910), Hopper (KN-3810); Zyxel Keenetic II / III, Extra, Extra II, Giga II / III, Omni, Omni II, Viva, Ultra, Ultra II</sup></sub>
        ```bash
        mkdir -p /opt/etc/opkg
-       echo "src/gz nfqws-keenetic https://anonym-tsk.github.io/nfqws-keenetic/mipsel" > /opt/etc/opkg/nfqws-keenetic.conf
+       echo "src/gz nfqws2-keenetic https://nfqws.github.io/nfqws2-keenetic/mipsel" > /opt/etc/opkg/nfqws2-keenetic.conf
        ```
 
      - `aarch64-3.10` <sub><sup>Keenetic Peak (KN-2710), Ultra (KN-1811), Hopper (KN-3811), Hopper SE (KN-3812), Giga (KN-1012)</sup></sub>
        ```bash
        mkdir -p /opt/etc/opkg
-       echo "src/gz nfqws-keenetic https://anonym-tsk.github.io/nfqws-keenetic/aarch64" > /opt/etc/opkg/nfqws-keenetic.conf
+       echo "src/gz nfqws2-keenetic https://nfqws.github.io/nfqws2-keenetic/aarch64" > /opt/etc/opkg/nfqws2-keenetic.conf
        ```
    </details>
 
 3. Установите пакет
    ```bash
    opkg update
-   opkg install nfqws-keenetic
+   opkg install nfqws2-keenetic
    ```
-
-4. Установите веб-интерфейс (опционально)
-   ```bash
-   opkg install nfqws-keenetic-web
-   ```
-> [!NOTE]
-> Адрес веб-интерфейса `http://<router_ip>:90` (например http://192.168.1.1:90)<br/>
-> Для авторизации введите имя пользователя и пароль пользователя entware (по умолчанию root и keenetic если не меняли при установке)
-
-> [!TIP]
-> По-умолчанию php использует только 8Мб памяти. Из-за этого ограничения, могут не загружаться большие списки файлов.
-> Вы можете изменить конфигурацию php самостоятельно:<br/>
-> Откройте файл `/opt/etc/php.ini` и измените следующие значения
-> ```ini
-> memory_limit = 32M
-> post_max_size = 32M
-> upload_max_filesize = 16M
-> ```
 
 ##### Обновление
 
 ```bash
 opkg update
-opkg upgrade nfqws-keenetic
-opkg upgrade nfqws-keenetic-web
+opkg upgrade nfqws2-keenetic
 ```
 
 ##### Удаление
 
 ```bash
-opkg remove --autoremove nfqws-keenetic-web nfqws-keenetic
+opkg remove --autoremove nfqws2-keenetic
 ```
 
 ##### Информация об установленной версии
 
 ```bash
-opkg info nfqws-keenetic
-opkg info nfqws-keenetic-web
+opkg info nfqws2-keenetic
 ```
 
 ### Политики доступа на Keenetic/Netcraze
 
 На Keenetic/Netcraze можно создать политику доступа **NFQWS** (Приоритеты подключений – Политики доступа в интернет)
-и после перезапуска nfqws-keenetic будет работать только для устройств из этой политики.<br/>
+и после перезапуска nfqws2-keenetic будет работать только для устройств из этой политики.<br/>
 _Не забудьте поставить галочку на интерфейсе провайдера в созданной политике._
 
 Можно сделать политику исключения, добавив в конфиг `POLICY_EXCLUDE=1`. Тогда будет обрабатываться трафик для всех устройств, кроме тех, что добавлены в политику `NFQWS`.<br/>
@@ -232,26 +214,21 @@ _Не забудьте поставить галочку на интерфейс
 
 2. Установите публичный ключ репозитория
    ```bash
-   wget -O "/tmp/nfqws-keenetic.pub" "https://anonym-tsk.github.io/nfqws-keenetic/openwrt/nfqws-keenetic.pub"
-   opkg-key add /tmp/nfqws-keenetic.pub
+   wget -O "/tmp/nfqws2-keenetic.pub" "https://nfqws.github.io/nfqws2-keenetic/openwrt/nfqws2-keenetic.pub"
+   opkg-key add /tmp/nfqws2-keenetic.pub
    ```
 
 3. Установите репозиторий в систему
    ```bash
-   echo "src/gz nfqws-keenetic https://anonym-tsk.github.io/nfqws-keenetic/openwrt" > /etc/opkg/nfqws-keenetic.conf
+   echo "src/gz nfqws2-keenetic https://nfqws.github.io/nfqws2-keenetic/openwrt" > /etc/opkg/nfqws2-keenetic.conf
    ```
    Репозиторий универсальный, поддерживаемые архитектуры: `mipsel`, `mips`, `mips64`, `aarch64`, `armv7`, `x86`, `x86_64`, `lexra`.
-   Для добавления поддержки новых устройств, [создайте Feature Request](https://github.com/Anonym-tsk/nfqws-keenetic/issues/new?template=feature_request.md&title=%5BFeature+request%5D+)
+   Для добавления поддержки новых устройств, [создайте Feature Request](https://github.com/nfqws/nfqws2-keenetic/issues/new?template=feature_request.md&title=%5BFeature+request%5D+)
 
 4. Установите пакет
    ```bash
    opkg update
-   opkg install nfqws-keenetic
-   ```
-
-5. Установите веб-интерфейс (опционально)
-   ```bash
-   opkg install nfqws-keenetic-web
+   opkg install nfqws2-keenetic
    ```
 
 #### Версии 25.xx и Snapshot, пакетный менеджер `apk`
@@ -264,37 +241,32 @@ _Не забудьте поставить галочку на интерфейс
 
 2. Установите публичный ключ репозитория
    ```bash
-   wget -O "/etc/apk/keys/nfqws-keenetic.pem" "https://anonym-tsk.github.io/nfqws-keenetic/openwrt/nfqws-keenetic.pem"
+   wget -O "/etc/apk/keys/nfqws2-keenetic.pem" "https://nfqws.github.io/nfqws2-keenetic/openwrt/nfqws2-keenetic.pem"
    ```
 
 3. Установите репозиторий в систему
    ```bash
-   echo "https://anonym-tsk.github.io/nfqws-keenetic/openwrt/packages.adb" > /etc/apk/repositories.d/nfqws-keenetic.list
+   echo "https://nfqws.github.io/nfqws2-keenetic/openwrt/packages.adb" > /etc/apk/repositories.d/nfqws2-keenetic.list
    ```
    Репозиторий универсальный, поддерживаемые архитектуры: `mipsel`, `mips`, `mips64`, `aarch64`, `armv7`, `x86`, `x86_64`, `lexra`.
-   Для добавления поддержки новых устройств, [создайте Feature Request](https://github.com/Anonym-tsk/nfqws-keenetic/issues/new?template=feature_request.md&title=%5BFeature+request%5D+)
+   Для добавления поддержки новых устройств, [создайте Feature Request](https://github.com/nfqws/nfqws2-keenetic/issues/new?template=feature_request.md&title=%5BFeature+request%5D+)
 
 4. Установите пакет
    ```bash
-   apk --update-cache add nfqws-keenetic
-   ```
-
-5. Установите веб-интерфейс (опционально)
-   ```bash
-   apk add nfqws-keenetic-web
+   apk --update-cache add nfqws2-keenetic
    ```
 
 > [!NOTE]
 > NB: Все пути файлов, описанные в этой инструкции, начинающиеся с `/opt`, на OpenWRT будут начинаться с корня `/`.
-> Например конфиг расположен в `/etc/nfqws/nfqws.conf`
+> Например конфиг расположен в `/etc/nfqws2/nfqws2.conf`
 > 
-> Для запуска/остановки используйте команду `service nfqws-keenetic {start|stop|restart|reload|status}`
+> Для запуска/остановки используйте команду `service nfqws2-keenetic {start|stop|restart|reload|status}`
 
 ---
 
 ### Настройки
 
-Файл настроек расположен по пути `/opt/etc/nfqws/nfqws.conf`. Для редактирования можно воспользоваться встроенным редактором `vi` или установить `nano`.
+Файл настроек расположен по пути `/opt/etc/nfqws2/nfqws2.conf`. Для редактирования можно воспользоваться встроенным редактором `vi` или установить `nano`.
 
 ```bash
 # Интерфейс провайдера. Обычно `eth3` или `eth2.2` для проводного соединения, и `ppp0` для PPPoE
@@ -302,6 +274,9 @@ _Не забудьте поставить галочку на интерфейс
 # Можно ввести несколько интерфейсов, например ISP_INTERFACE="eth3 nwg1"
 # Для поиска интерфейса можно воспользоваться командами `route` или `ifconfig`
 ISP_INTERFACE="..."
+
+# Аргументы запуска nfqws2, сюда добавляйте ваши lua скрипты
+NFQWS_BASE_ARGS="..."
 
 # Стратегии обработки HTTPS и QUIC трафика
 NFQWS_ARGS="..."
@@ -345,7 +320,7 @@ LOG_LEVEL=0|1
 ```
 
 Стратегии применяются ко всем доменам из `user.list` и `auto.list`, за исключением доменов из `exclude.list`.<br/>
-В конфиге есть 3 варианта параметра `NFQWS_EXTRA_ARGS` - это режим работы nfqws:
+В конфиге есть 3 варианта параметра `NFQWS_EXTRA_ARGS` - это режим работы nfqws2:
 - В режиме `$MODE_LIST` будут обрабатываться только домены из файла `user.list`
 - В режиме `$MODE_AUTO` кроме этого будут автоматически определяться недоступные домены и добавляться в список, по которому `nfqws` обрабатывает трафик. Домен будет добавлен, если за 60 секунд будет 3 раза определено, что ресурс недоступен
 - В режиме `$MODE_ALL` будет обрабатываться весь трафик кроме доменов из списка `exclude.list`
@@ -357,18 +332,18 @@ LOG_LEVEL=0|1
 
 ### Полезное
 
-1. Конфиг-файл `/opt/etc/nfqws/nfqws.conf`
-2. Скрипт запуска/остановки `/opt/etc/init.d/S51nfqws {start|stop|restart|reload|status}`
-3. Вручную добавить домены в список можно в файле `/opt/etc/nfqws/user.list` (один домен на строке, поддомены учитываются автоматически)
-4. Автоматически добавленные домены `/opt/etc/nfqws/auto.list`
-5. Лог автоматически добавленных доменов `/opt/var/log/nfqws.log`
-6. Домены-исключения `/opt/etc/nfqws/exclude.list` (один домен на строке, поддомены учитываются автоматически)
+1. Конфиг-файл `/opt/etc/nfqws2/nfqws2.conf`
+2. Скрипт запуска/остановки `/opt/etc/init.d/S51nfqws2 {start|stop|restart|reload|status}`
+3. Вручную добавить домены в список можно в файле `/opt/etc/nfqws2/lists/user.list` (один домен на строке, поддомены учитываются автоматически)
+4. Автоматически добавленные домены `/opt/etc/nfqws2/lists/auto.list`
+5. Лог автоматически добавленных доменов `/opt/var/log/nfqws2.log`
+6. Домены-исключения `/opt/etc/nfqws2/lists/exclude.list` (один домен на строке, поддомены учитываются автоматически)
 7. IP-список для обработки `ipset.list` (на каждой строчке ip или cidr ipv4, или ipv6)
 8. IP-список для исключения `ipset_exclude.list`
-9. Проверить, что нужные правила добавлены в таблицу маршрутизации `iptables-save | grep "queue-num 300"`
+9. Проверить, что нужные правила добавлены в таблицу маршрутизации `iptables-save | grep nfqws`
    > Вы должны увидеть похожие строки
    > ```
-   > -A POSTROUTING -o eth3 -p tcp -m tcp --dport 443 -m connbytes --connbytes 1:12 --connbytes-mode packets --connbytes-dir original -m mark ! --mark 0x40000000/0x40000000 -j NFQUEUE --queue-num 300 --queue-bypass
+   > -A nfqws_post -o eth3 -p tcp -m mark ! --mark 0x40000000/0x40000000 -m multiport --dports 443,2053,2083,2087,2096,8443 -m tcp --tcp-flags RST RST -j NFQUEUE --queue-num 300 --queue-bypass
    > ```
 
 ### Если ничего не работает...
@@ -392,10 +367,10 @@ LOG_LEVEL=0|1
 1. `iptables: No chain/target/match by that name`<br/>
    Не установлен пакет "Модули ядра подсистемы Netfilter". На Keenetic/Netcraze он появляется в списке пакетов только после установки "Протокол IPv6"
 2. `can't initialize ip6tables table` и/или `Perhaps ip6tables or your kernel needs to be upgraded`<br/>
-   Не установлен пакет "Протокол IPv6". Также, проблема может появляться на старых прошивках 2.xx, выключите поддержку IPv6 в конфиге NFQWS
+   Не установлен пакет "Протокол IPv6". Также, проблема может появляться на старых прошивках 2.xx, выключите поддержку IPv6 в конфиге NFQWS2
 3. Ошибки вида `readlink: not found`, `dirname: not found`<br/>
    Обычно возникают не на кинетиках. Решение - установить busybox: `opkg install busybox` или отдельно пакеты `opkg install coreutils-readlink coreutils-dirname`
-4. `Failed to download the package list from https://anonym-tsk.github.io/nfqws-keenetic/all/Packages.gz`<br/>
+4. `Failed to download the package list from https://nfqws.github.io/nfqws2-keenetic/all/Packages.gz`<br/>
    Скорее всего не устеновлен пакет `wget-ssl`. Если вы уверены, что он установлен – переустановите его: `opkg install --force-reinstall wget-ssl`
 
 ### Как использовать несколько стратегий
@@ -406,17 +381,6 @@ LOG_LEVEL=0|1
 ```bash
 NFQWS_ARGS_CUSTOM="--filter-tcp=443 --dpi-desync=fake,split2 --hostlist=custom.list --new --filter-tcp=80 --dpi-desync=disorder2 --dpi-desync-fooling=md5sig,badseq"
 ```
-
-### Как подобрать рабочую стратегию NFQWS
-
-1. Запустить скрипт и следовать его инструкциям
-   ```bash
-   opkg install curl
-   /bin/sh -c "$(curl -fsSL https://github.com/Anonym-tsk/nfqws-keenetic/raw/master/common/strategy.sh)"
-   ```
-   Подробнее можно почитать на [исходной странице](https://github.com/bol-van/zapret?tab=readme-ov-file#%D0%BF%D1%80%D0%BE%D0%B2%D0%B5%D1%80%D0%BA%D0%B0-%D0%BF%D1%80%D0%BE%D0%B2%D0%B0%D0%B9%D0%B4%D0%B5%D1%80%D0%B0)
-
-2. Найденную стратегию вписать в конфиге `/opt/etc/nfqws/nfqws.conf` в параметр `NFQWS_ARGS`
 
 ---
 
