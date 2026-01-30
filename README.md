@@ -125,7 +125,7 @@
 
 - Перед установкой удалите `nfqws-keenetic` (конфиги можно сохранить)
   ```bash
-  opkg remove nfqws-keenetic
+  opkg remove nfqws-keenetic-web nfqws-keenetic
   ```
 
 ---
