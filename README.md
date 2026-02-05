@@ -174,6 +174,8 @@
    opkg install nfqws2-keenetic
    ```
 
+4. [Установите веб-интерфейс (опционально)](https://github.com/nfqws/nfqws-keenetic-web)
+
 ##### Обновление
 
 ```bash
@@ -236,6 +238,8 @@ _Не забудьте поставить галочку на интерфейс
    opkg install nfqws2-keenetic
    ```
 
+5. [Установите веб-интерфейс (опционально)](https://github.com/nfqws/nfqws-keenetic-web)
+
 #### Версии 25.xx и Snapshot, пакетный менеджер `apk`
 
 1. Установите необходимые зависимости
@@ -260,6 +264,8 @@ _Не забудьте поставить галочку на интерфейс
    ```bash
    apk --update-cache add nfqws2-keenetic
    ```
+
+5. [Установите веб-интерфейс (опционально)](https://github.com/nfqws/nfqws-keenetic-web)
 
 > [!NOTE]
 > NB: Все пути файлов, описанные в этой инструкции, начинающиеся с `/opt`, на OpenWRT будут начинаться с корня `/`.
