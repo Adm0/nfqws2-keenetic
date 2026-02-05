@@ -174,7 +174,7 @@
    opkg install nfqws2-keenetic
    ```
 
-4. [Установите веб-интерфейс (опционально)](https://github.com/nfqws/nfqws-keenetic-web)
+4. [Установите веб-интерфейс](https://github.com/nfqws/nfqws-keenetic-web) (опционально)
 
 ##### Обновление
 
@@ -238,7 +238,7 @@ _Не забудьте поставить галочку на интерфейс
    opkg install nfqws2-keenetic
    ```
 
-5. [Установите веб-интерфейс (опционально)](https://github.com/nfqws/nfqws-keenetic-web)
+5. [Установите веб-интерфейс](https://github.com/nfqws/nfqws-keenetic-web) (опционально)
 
 #### Версии 25.xx и Snapshot, пакетный менеджер `apk`
 
@@ -265,7 +265,7 @@ _Не забудьте поставить галочку на интерфейс
    apk --update-cache add nfqws2-keenetic
    ```
 
-5. [Установите веб-интерфейс (опционально)](https://github.com/nfqws/nfqws-keenetic-web)
+5. [Установите веб-интерфейс](https://github.com/nfqws/nfqws-keenetic-web) (опционально)
 
 > [!NOTE]
 > NB: Все пути файлов, описанные в этой инструкции, начинающиеся с `/opt`, на OpenWRT будут начинаться с корня `/`.
