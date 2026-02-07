@@ -251,35 +251,35 @@ _firewall_start() {
   CB_ORIG="-m connbytes --connbytes-dir=original --connbytes-mode=packets"
   CB_REPLY="-m connbytes --connbytes-dir=reply --connbytes-mode=packets"
 
-  $CMD -t mangle -N $IPT_GROUP_POST 2>/dev/null
-  $CMD -t mangle -F $IPT_GROUP_POST
-  $CMD -t mangle -C POSTROUTING -j $IPT_GROUP_POST 2>/dev/null || $CMD -t mangle -A POSTROUTING -j $IPT_GROUP_POST
-  $CMD -t mangle -N $IPT_GROUP_PRE 2>/dev/null
-  $CMD -t mangle -F $IPT_GROUP_PRE
-  $CMD -t mangle -C PREROUTING -j $IPT_GROUP_PRE 2>/dev/null || $CMD -t mangle -A PREROUTING -j $IPT_GROUP_PRE
+  $CMD -w -t mangle -N $IPT_GROUP_POST 2>/dev/null
+  $CMD -w -t mangle -F $IPT_GROUP_POST
+  $CMD -w -t mangle -C POSTROUTING -j $IPT_GROUP_POST 2>/dev/null || $CMD -w -t mangle -A POSTROUTING -j $IPT_GROUP_POST
+  $CMD -w -t mangle -N $IPT_GROUP_PRE 2>/dev/null
+  $CMD -w -t mangle -F $IPT_GROUP_PRE
+  $CMD -w -t mangle -C PREROUTING -j $IPT_GROUP_PRE 2>/dev/null || $CMD -w -t mangle -A PREROUTING -j $IPT_GROUP_PRE
 
   for IFACE in $ISP_INTERFACE; do
-    $CMD -t mangle -I $IPT_GROUP_POST -o $IFACE $CHECKMARK -p udp -m multiport --dports $UDP_PORTS $CB_ORIG --connbytes 1:$MAX_PKT_OUT $JNFQ
-    $CMD -t mangle -I $IPT_GROUP_POST -o $IFACE $CHECKMARK -p tcp -m multiport --dports $TCP_PORTS $CB_ORIG --connbytes 1:$MAX_PKT_OUT $JNFQ
-    $CMD -t mangle -I $IPT_GROUP_POST -o $IFACE $CHECKMARK -p tcp -m multiport --dports $TCP_PORTS --tcp-flags fin fin $JNFQ
-    $CMD -t mangle -I $IPT_GROUP_POST -o $IFACE $CHECKMARK -p tcp -m multiport --dports $TCP_PORTS --tcp-flags rst rst $JNFQ
-    $CMD -t mangle -I $IPT_GROUP_PRE -i $IFACE -p udp -m multiport --sports $UDP_PORTS $CB_REPLY --connbytes 1:$MAX_PKT_IN $JNFQ
-    $CMD -t mangle -I $IPT_GROUP_PRE -i $IFACE -p tcp -m multiport --sports $TCP_PORTS $CB_REPLY --connbytes 1:$MAX_PKT_IN $JNFQ
-    $CMD -t mangle -I $IPT_GROUP_PRE -i $IFACE -p tcp -m multiport --sports $TCP_PORTS --tcp-flags syn,ack syn,ack $JNFQ
-    $CMD -t mangle -I $IPT_GROUP_PRE -i $IFACE -p tcp -m multiport --sports $TCP_PORTS --tcp-flags fin fin $JNFQ
-    $CMD -t mangle -I $IPT_GROUP_PRE -i $IFACE -p tcp -m multiport --sports $TCP_PORTS --tcp-flags rst rst $JNFQ
+    $CMD -w -t mangle -I $IPT_GROUP_POST -o $IFACE $CHECKMARK -p udp -m multiport --dports $UDP_PORTS $CB_ORIG --connbytes 1:$MAX_PKT_OUT $JNFQ
+    $CMD -w -t mangle -I $IPT_GROUP_POST -o $IFACE $CHECKMARK -p tcp -m multiport --dports $TCP_PORTS $CB_ORIG --connbytes 1:$MAX_PKT_OUT $JNFQ
+    $CMD -w -t mangle -I $IPT_GROUP_POST -o $IFACE $CHECKMARK -p tcp -m multiport --dports $TCP_PORTS --tcp-flags fin fin $JNFQ
+    $CMD -w -t mangle -I $IPT_GROUP_POST -o $IFACE $CHECKMARK -p tcp -m multiport --dports $TCP_PORTS --tcp-flags rst rst $JNFQ
+    $CMD -w -t mangle -I $IPT_GROUP_PRE -i $IFACE -p udp -m multiport --sports $UDP_PORTS $CB_REPLY --connbytes 1:$MAX_PKT_IN $JNFQ
+    $CMD -w -t mangle -I $IPT_GROUP_PRE -i $IFACE -p tcp -m multiport --sports $TCP_PORTS $CB_REPLY --connbytes 1:$MAX_PKT_IN $JNFQ
+    $CMD -w -t mangle -I $IPT_GROUP_PRE -i $IFACE -p tcp -m multiport --sports $TCP_PORTS --tcp-flags syn,ack syn,ack $JNFQ
+    $CMD -w -t mangle -I $IPT_GROUP_PRE -i $IFACE -p tcp -m multiport --sports $TCP_PORTS --tcp-flags fin fin $JNFQ
+    $CMD -w -t mangle -I $IPT_GROUP_PRE -i $IFACE -p tcp -m multiport --sports $TCP_PORTS --tcp-flags rst rst $JNFQ
   done
 }
 
 _firewall_stop() {
   local CMD=$1 # iptables or ip6tables
 
-	$CMD -t mangle -D POSTROUTING -j $IPT_GROUP_POST
-	$CMD -t mangle -D PREROUTING -j $IPT_GROUP_PRE
-	$CMD -t mangle -F $IPT_GROUP_POST
-	$CMD -t mangle -X $IPT_GROUP_POST
-	$CMD -t mangle -F $IPT_GROUP_PRE
-	$CMD -t mangle -X $IPT_GROUP_PRE
+  $CMD -w -t mangle -D POSTROUTING -j $IPT_GROUP_POST
+  $CMD -w -t mangle -D PREROUTING -j $IPT_GROUP_PRE
+  $CMD -w -t mangle -F $IPT_GROUP_POST
+  $CMD -w -t mangle -X $IPT_GROUP_POST
+  $CMD -w -t mangle -F $IPT_GROUP_PRE
+  $CMD -w -t mangle -X $IPT_GROUP_PRE
 }
 
 firewall_iptables() {
