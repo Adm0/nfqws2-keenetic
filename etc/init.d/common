@@ -166,8 +166,6 @@ kernel_modules() {
     if [ -n "$connmark_mod_path" ]; then
       insmod "$connmark_mod_path" &> /dev/null
       echo "xt_connmark.ko module loaded"
-    else
-      echo "Cannot find xt_connmark.ko module"
     fi
   fi
 
