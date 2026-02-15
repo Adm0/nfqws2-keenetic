@@ -4,10 +4,10 @@ POLICY_MARK=
 MARK_EXCLUDE="0x20000000/0x20000000"
 # nfqws2 processed mark
 MARK_PROCESSED="0x40000000/0x40000000"
-# iptables groups
-IPT_GROUP_POST="nfqws_post"
-IPT_GROUP_PRE="nfqws_pre"
-IPT_GROUP_NAT="nfqws_nat"
+# iptables chains
+IPT_CHAIN_POST="NFQWS2_POSTROUTING"
+IPT_CHAIN_PRE="NFQWS2_PREROUTING"
+IPT_CHAIN_NAT="NFQWS2_NAT"
 
 source "$CONFFILE"
 if [ -f "$CONFFILE.run" ]; then
@@ -252,53 +252,53 @@ _firewall_rules() {
   fi
 
   echo "*mangle"
-  echo ":$IPT_GROUP_POST - [0:0]"
-  echo ":$IPT_GROUP_PRE - [0:0]"
+  echo ":$IPT_CHAIN_POST - [0:0]"
+  echo ":$IPT_CHAIN_PRE - [0:0]"
 
   for IFACE in $ISP_INTERFACE; do
     # --- POSTROUTING (outgoing) ---
     # 1) Apply policy-based exclusion
     if [ -n "$POLICY_EXC_RULE" ]; then
-      echo "-A $IPT_GROUP_POST -o $IFACE $POLICY_EXC_RULE"
+      echo "-A $IPT_CHAIN_POST -o $IFACE $POLICY_EXC_RULE"
     fi
 
     # 2) Exclude already processed packets by setting CONNMARK exclude bit (no packet mark modification)
     # If nfqws already marked the packet as processed, exclude the whole connection from further NFQUEUE processing.
-    echo "-A $IPT_GROUP_POST -o $IFACE -m mark --mark $MARK_PROCESSED $CONN_SET_EXCLUDE"
+    echo "-A $IPT_CHAIN_POST -o $IFACE -m mark --mark $MARK_PROCESSED $CONN_SET_EXCLUDE"
 
     # If connection is excluded, stop processing in this chain immediately.
-    echo "-A $IPT_GROUP_POST -o $IFACE -m connmark --mark $MARK_EXCLUDE -j RETURN"
+    echo "-A $IPT_CHAIN_POST -o $IFACE -m connmark --mark $MARK_EXCLUDE -j RETURN"
 
     # 3) NFQUEUE rules (process only packets NOT excluded via CONNMARK)
-    echo "-A $IPT_GROUP_POST -o $IFACE $CONN_CHECK -p udp -m multiport --dports $UDP_PORTS $CB_ORIG --connbytes 1:$MAX_PKT_OUT $JNFQ"
-    echo "-A $IPT_GROUP_POST -o $IFACE $CONN_CHECK -p tcp -m multiport --dports $TCP_PORTS $CB_ORIG --connbytes 1:$MAX_PKT_OUT $JNFQ"
-    echo "-A $IPT_GROUP_POST -o $IFACE $CONN_CHECK -p tcp -m multiport --dports $TCP_PORTS --tcp-flags FIN FIN $JNFQ"
-    echo "-A $IPT_GROUP_POST -o $IFACE $CONN_CHECK -p tcp -m multiport --dports $TCP_PORTS --tcp-flags RST RST $JNFQ"
+    echo "-A $IPT_CHAIN_POST -o $IFACE $CONN_CHECK -p udp -m multiport --dports $UDP_PORTS $CB_ORIG --connbytes 1:$MAX_PKT_OUT $JNFQ"
+    echo "-A $IPT_CHAIN_POST -o $IFACE $CONN_CHECK -p tcp -m multiport --dports $TCP_PORTS $CB_ORIG --connbytes 1:$MAX_PKT_OUT $JNFQ"
+    echo "-A $IPT_CHAIN_POST -o $IFACE $CONN_CHECK -p tcp -m multiport --dports $TCP_PORTS --tcp-flags FIN FIN $JNFQ"
+    echo "-A $IPT_CHAIN_POST -o $IFACE $CONN_CHECK -p tcp -m multiport --dports $TCP_PORTS --tcp-flags RST RST $JNFQ"
 
     # --- PREROUTING (incoming / replies) ---
     # Exclude already processed packets (incoming / replies) by setting CONNMARK exclude bit
     # If nfqws marked an inbound packet as processed, exclude the whole connection from further NFQUEUE processing.
-    echo "-A $IPT_GROUP_PRE -i $IFACE -m mark --mark $MARK_PROCESSED $CONN_SET_EXCLUDE"
+    echo "-A $IPT_CHAIN_PRE -i $IFACE -m mark --mark $MARK_PROCESSED $CONN_SET_EXCLUDE"
 
     # If connection is excluded, stop processing in this chain immediately.
-    echo "-A $IPT_GROUP_PRE -i $IFACE -m connmark --mark $MARK_EXCLUDE -j RETURN"
+    echo "-A $IPT_CHAIN_PRE -i $IFACE -m connmark --mark $MARK_EXCLUDE -j RETURN"
 
     # Exclude decision is stored in CONNMARK, so replies for excluded connections will be skipped too.
-    echo "-A $IPT_GROUP_PRE -i $IFACE $CONN_CHECK -p udp -m multiport --sports $UDP_PORTS $CB_REPLY --connbytes 1:$MAX_PKT_IN $JNFQ"
-    echo "-A $IPT_GROUP_PRE -i $IFACE $CONN_CHECK -p tcp -m multiport --sports $TCP_PORTS $CB_REPLY --connbytes 1:$MAX_PKT_IN $JNFQ"
-    echo "-A $IPT_GROUP_PRE -i $IFACE $CONN_CHECK -p tcp -m multiport --sports $TCP_PORTS --tcp-flags SYN,ACK SYN,ACK $JNFQ"
-    echo "-A $IPT_GROUP_PRE -i $IFACE $CONN_CHECK -p tcp -m multiport --sports $TCP_PORTS --tcp-flags FIN FIN $JNFQ"
-    echo "-A $IPT_GROUP_PRE -i $IFACE $CONN_CHECK -p tcp -m multiport --sports $TCP_PORTS --tcp-flags RST RST $JNFQ"
+    echo "-A $IPT_CHAIN_PRE -i $IFACE $CONN_CHECK -p udp -m multiport --sports $UDP_PORTS $CB_REPLY --connbytes 1:$MAX_PKT_IN $JNFQ"
+    echo "-A $IPT_CHAIN_PRE -i $IFACE $CONN_CHECK -p tcp -m multiport --sports $TCP_PORTS $CB_REPLY --connbytes 1:$MAX_PKT_IN $JNFQ"
+    echo "-A $IPT_CHAIN_PRE -i $IFACE $CONN_CHECK -p tcp -m multiport --sports $TCP_PORTS --tcp-flags SYN,ACK SYN,ACK $JNFQ"
+    echo "-A $IPT_CHAIN_PRE -i $IFACE $CONN_CHECK -p tcp -m multiport --sports $TCP_PORTS --tcp-flags FIN FIN $JNFQ"
+    echo "-A $IPT_CHAIN_PRE -i $IFACE $CONN_CHECK -p tcp -m multiport --sports $TCP_PORTS --tcp-flags RST RST $JNFQ"
   done
   echo "COMMIT"
 
   if [ "$CMD" == "iptables" ]; then
     echo "*nat"
-    echo ":$IPT_GROUP_NAT - [0:0]"
+    echo ":$IPT_CHAIN_NAT - [0:0]"
 
     for IFACE in $ISP_INTERFACE; do
       # 4) NAT MASQUERADE
-      echo "-A $IPT_GROUP_NAT -o $IFACE -m mark --mark $MARK_PROCESSED -p udp -j MASQUERADE"
+      echo "-A $IPT_CHAIN_NAT -o $IFACE -m mark --mark $MARK_PROCESSED -p udp -j MASQUERADE"
     done
     echo "COMMIT"
   fi
@@ -308,11 +308,11 @@ _firewall_start() {
   local CMD=$1 # iptables or ip6tables
 
   _firewall_rules $CMD | $CMD-restore -n
-  $CMD -w -t mangle -C POSTROUTING -j $IPT_GROUP_POST 2>/dev/null || $CMD -w -t mangle -A POSTROUTING -j $IPT_GROUP_POST
-  $CMD -w -t mangle -C PREROUTING -j $IPT_GROUP_PRE 2>/dev/null || $CMD -w -t mangle -A PREROUTING -j $IPT_GROUP_PRE
+  $CMD -w -t mangle -C POSTROUTING -j $IPT_CHAIN_POST 2>/dev/null || $CMD -w -t mangle -A POSTROUTING -j $IPT_CHAIN_POST
+  $CMD -w -t mangle -C PREROUTING -j $IPT_CHAIN_PRE 2>/dev/null || $CMD -w -t mangle -A PREROUTING -j $IPT_CHAIN_PRE
 
   if [ "$CMD" == "iptables" ]; then
-    $CMD -w -t nat -C POSTROUTING -j $IPT_GROUP_NAT 2>/dev/null || $CMD -w -t nat -A POSTROUTING -j $IPT_GROUP_NAT
+    $CMD -w -t nat -C POSTROUTING -j $IPT_CHAIN_NAT 2>/dev/null || $CMD -w -t nat -A POSTROUTING -j $IPT_CHAIN_NAT
   fi
 }
 
@@ -320,26 +320,26 @@ _firewall_stop() {
   local CMD=$1 # iptables or ip6tables
 
   # Remove all possible jumps (in case of duplicates) and ignore errors if absent.
-  while $CMD -w -t mangle -C POSTROUTING -j $IPT_GROUP_POST 2>/dev/null; do
-    $CMD -w -t mangle -D POSTROUTING -j $IPT_GROUP_POST 2>/dev/null || break
+  while $CMD -w -t mangle -C POSTROUTING -j $IPT_CHAIN_POST 2>/dev/null; do
+    $CMD -w -t mangle -D POSTROUTING -j $IPT_CHAIN_POST 2>/dev/null || break
   done
-  while $CMD -w -t mangle -C PREROUTING -j $IPT_GROUP_PRE 2>/dev/null; do
-    $CMD -w -t mangle -D PREROUTING -j $IPT_GROUP_PRE 2>/dev/null || break
+  while $CMD -w -t mangle -C PREROUTING -j $IPT_CHAIN_PRE 2>/dev/null; do
+    $CMD -w -t mangle -D PREROUTING -j $IPT_CHAIN_PRE 2>/dev/null || break
   done
   if [ "$CMD" == "iptables" ]; then
-    while $CMD -w -t nat -C POSTROUTING -j $IPT_GROUP_NAT 2>/dev/null; do
-      $CMD -w -t nat -D POSTROUTING -j $IPT_GROUP_NAT 2>/dev/null || break
+    while $CMD -w -t nat -C POSTROUTING -j $IPT_CHAIN_NAT 2>/dev/null; do
+      $CMD -w -t nat -D POSTROUTING -j $IPT_CHAIN_NAT 2>/dev/null || break
     done
   fi
 
   # Flush and delete chains if they exist.
-  $CMD -w -t mangle -F $IPT_GROUP_POST 2>/dev/null
-  $CMD -w -t mangle -X $IPT_GROUP_POST 2>/dev/null
-  $CMD -w -t mangle -F $IPT_GROUP_PRE 2>/dev/null
-  $CMD -w -t mangle -X $IPT_GROUP_PRE 2>/dev/null
+  $CMD -w -t mangle -F $IPT_CHAIN_POST 2>/dev/null
+  $CMD -w -t mangle -X $IPT_CHAIN_POST 2>/dev/null
+  $CMD -w -t mangle -F $IPT_CHAIN_PRE 2>/dev/null
+  $CMD -w -t mangle -X $IPT_CHAIN_PRE 2>/dev/null
   if [ "$CMD" == "iptables" ]; then
-    $CMD -w -t nat -F $IPT_GROUP_NAT 2>/dev/null
-    $CMD -w -t nat -X $IPT_GROUP_NAT 2>/dev/null
+    $CMD -w -t nat -F $IPT_CHAIN_NAT 2>/dev/null
+    $CMD -w -t nat -X $IPT_CHAIN_NAT 2>/dev/null
   fi
 }
 
