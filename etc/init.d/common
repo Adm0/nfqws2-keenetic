@@ -96,14 +96,8 @@ create_running_config() {
     POLICY_MARK=""
   fi
 
-  echo "ISP_INTERFACE=\"$ISP_INTERFACE\"" > "$CONFFILE.run"
   echo "IPV6_ENABLED=$IPV6_ENABLED" >> "$CONFFILE.run"
-  echo "TCP_PORTS=$TCP_PORTS" >> "$CONFFILE.run"
-  echo "UDP_PORTS=$UDP_PORTS" >> "$CONFFILE.run"
-  echo "POLICY_NAME=\"$POLICY_NAME\"" >> "$CONFFILE.run"
-  echo "POLICY_EXCLUDE=$POLICY_EXCLUDE" >> "$CONFFILE.run"
   echo "POLICY_MARK=\"$POLICY_MARK\"" >> "$CONFFILE.run"
-  echo "NFQUEUE_NUM=$NFQUEUE_NUM" >> "$CONFFILE.run"
 }
 
 remove_running_config() {
