@@ -106,72 +106,35 @@ remove_running_config() {
 }
 
 kernel_modules() {
-  KERNEL=$(uname -r)
+  local KERNEL=$(uname -r)
+  local mod_name mod_path
 
   # Try to load all modules (OpenWRT or Padavan)
-  modprobe -a -q nfnetlink_queue xt_multiport xt_connbytes xt_NFQUEUE xt_CONNMARK xt_connmark &> /dev/null
+  modprobe -a -q nfnetlink_queue xt_multiport xt_connbytes xt_NFQUEUE xt_CONNMARK xt_connmark nf_conntrack &> /dev/null
 
-  if [ -z "$(lsmod 2>/dev/null | grep "nfnetlink_queue ")" ]; then
-    nfnetlink_mod_path=$(find "/lib/modules/$KERNEL" -name "nfnetlink_queue.ko*")
+  for mod_name in nfnetlink_queue xt_multiport xt_connbytes xt_NFQUEUE; do
+    if [ -z "$(lsmod 2>/dev/null | grep -i "$mod_name ")" ]; then
+      mod_path=$(find "/lib/modules/$KERNEL" -iname "$mod_name.ko*" | head -n 1)
 
-    if [ -n "$nfnetlink_mod_path" ]; then
-      insmod "$nfnetlink_mod_path" &> /dev/null
-      echo "nfnetlink_queue.ko loaded"
-    else
-      echo "Cannot find nfnetlink_queue.ko module"
+      if [ -n "$mod_path" ]; then
+        insmod "$mod_path" &> /dev/null
+        echo "$mod_name.ko loaded"
+      else
+        echo "Cannot find $mod_name.ko module"
+      fi
     fi
-  fi
+  done
 
-  if [ -z "$(lsmod 2>/dev/null | grep "xt_multiport ")" ]; then
-    multiport_mod_path=$(find "/lib/modules/$KERNEL" -name "xt_multiport.ko*")
+  for mod_name in xt_connmark nf_conntrack; do
+    if [ -z "$(lsmod 2>/dev/null | grep -i "$mod_name ")" ]; then
+      mod_path=$(find "/lib/modules/$KERNEL" -iname "$mod_name.ko*" | head -n 1)
 
-    if [ -n "$multiport_mod_path" ]; then
-      insmod "$multiport_mod_path" &> /dev/null
-      echo "xt_multiport.ko loaded"
-    else
-      echo "Cannot find xt_multiport.ko module"
+      if [ -n "$mod_path" ]; then
+        insmod "$mod_path" &> /dev/null
+        echo "$mod_name.ko loaded"
+      fi
     fi
-  fi
-
-  if [ -z "$(lsmod 2>/dev/null | grep "xt_connbytes ")" ]; then
-    connbytes_mod_path=$(find "/lib/modules/$KERNEL" -name "xt_connbytes.ko*")
-
-    if [ -n "$connbytes_mod_path" ]; then
-      insmod "$connbytes_mod_path" &> /dev/null
-      echo "xt_connbytes.ko loaded"
-    else
-      echo "Cannot find xt_connbytes.ko module"
-    fi
-  fi
-
-  if [ -z "$(lsmod 2>/dev/null | grep "xt_NFQUEUE ")" ]; then
-    nfqueue_mod_path=$(find "/lib/modules/$KERNEL" -name "xt_NFQUEUE.ko*")
-
-    if [ -n "$nfqueue_mod_path" ]; then
-      insmod "$nfqueue_mod_path" &> /dev/null
-      echo "xt_NFQUEUE.ko loaded"
-    else
-      echo "Cannot find xt_NFQUEUE.ko module"
-    fi
-  fi
-
-  if [ -z "$(lsmod 2>/dev/null | grep "xt_CONNMARK ")" ] && [ -z "$(lsmod 2>/dev/null | grep "xt_connmark ")" ]; then
-    connmark_mod_path=$(find "/lib/modules/$KERNEL" -name "xt_CONNMARK.ko*" -o -name "xt_connmark.ko*" | head -n 1)
-
-    if [ -n "$connmark_mod_path" ]; then
-      insmod "$connmark_mod_path" &> /dev/null
-      echo "xt_connmark.ko module loaded"
-    fi
-  fi
-
-  if [ -z "$(lsmod 2>/dev/null | grep "nf_conntrack ")" ]; then
-    conntrack_mod_path=$(find "/lib/modules/$KERNEL" -name "nf_conntrack.ko*" | head -n 1)
-
-    if [ -n "$conntrack_mod_path" ]; then
-      insmod "$conntrack_mod_path" &> /dev/null
-      echo "nf_conntrack.ko loaded"
-    fi
-  fi
+  done
 }
 
 _startup_args() {
