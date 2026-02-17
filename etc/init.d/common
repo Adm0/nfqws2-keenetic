@@ -88,17 +88,7 @@ validate_config() {
 }
 
 create_running_config() {
-  local MARK=$(/bin/ndmc -c show ip policy 2>&1 | grep -i "description = $POLICY_NAME:" -A 1 | grep 'mark:' | grep -o '[^ ]*$' | head -n 1)
-  if [ -n "$MARK" ]; then
-    POLICY_MARK="0x$MARK/0x0fffffff"
-    if [ -n "$POLICY_EXCLUDE" ] && [ "$POLICY_EXCLUDE" -ne "0" ]; then
-      echo "Found policy '$POLICY_NAME'. Traffic from it will be excluded from processing."
-    else
-      echo "Found policy '$POLICY_NAME'. Only traffic from it will be processed."
-    fi
-  else
-    POLICY_MARK=""
-  fi
+  POLICY_MARK=$(find_policy "$POLICY_NAME")
 
   echo "IPV6_ENABLED=$IPV6_ENABLED" >> "$CONFFILE.run"
   echo "POLICY_MARK=\"$POLICY_MARK\"" >> "$CONFFILE.run"
@@ -264,18 +254,18 @@ _firewall_rules_mangle() {
 _firewall_rules_nat() {
   local CMD=$1 # iptables or ip6tables
 
-    echo "*nat"
-    echo ":$IPT_CHAIN_NAT - [0:0]"
+  echo "*nat"
+  echo ":$IPT_CHAIN_NAT - [0:0]"
 
-    if ! $CMD -w -t nat -C POSTROUTING -j $IPT_CHAIN_NAT &>/dev/null; then
-      echo "-A POSTROUTING -j $IPT_CHAIN_NAT"
-    fi
+  if ! $CMD -w -t nat -C POSTROUTING -j $IPT_CHAIN_NAT &>/dev/null; then
+    echo "-A POSTROUTING -j $IPT_CHAIN_NAT"
+  fi
 
-    for IFACE in $ISP_INTERFACE; do
-      # 4) NAT MASQUERADE
-      echo "-A $IPT_CHAIN_NAT -o $IFACE -m mark --mark $MARK_PROCESSED -p udp -j MASQUERADE"
-    done
-    echo "COMMIT"
+  for IFACE in $ISP_INTERFACE; do
+    # 4) NAT MASQUERADE
+    echo "-A $IPT_CHAIN_NAT -o $IFACE -m mark --mark $MARK_PROCESSED -p udp -j MASQUERADE"
+  done
+  echo "COMMIT"
 }
 
 _firewall_start() {
@@ -344,7 +334,7 @@ firewall_start() {
   _firewall_start iptables
 
   if [ -n "$IPV6_ENABLED" ] && [ "$IPV6_ENABLED" -ne "0" ]; then
-  _firewall_start ip6tables
+    _firewall_start ip6tables
   fi
 }
 

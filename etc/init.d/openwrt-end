@@ -1,3 +1,11 @@
+find_policy() {
+  local NAME=$1
+
+  if [[ "$NAME" == 0x* ]]; then
+    echo "$NAME"
+  fi
+}
+
 extra_command() {
   local cmd="$1"
   local help="$2"

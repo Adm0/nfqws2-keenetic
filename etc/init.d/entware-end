@@ -1,3 +1,17 @@
+find_policy() {
+  local NAME=$1
+
+  local MARK=$(/bin/ndmc -c show ip policy 2>&1 | grep -i "description = $NAME:" -A 1 | grep 'mark:' | grep -o '[^ ]*$' | head -n 1)
+  if [ -n "$MARK" ]; then
+    echo "0x$MARK/0x0fffffff"
+    if [ -n "$POLICY_EXCLUDE" ] && [ "$POLICY_EXCLUDE" -ne "0" ]; then
+      echo "Found policy '$POLICY_NAME'. Traffic from it will be excluded from processing." >&2
+    else
+      echo "Found policy '$POLICY_NAME'. Only traffic from it will be processed." >&2
+    fi
+  fi
+}
+
 start() {
   if is_running; then
     echo 'Service NFQWS2 is already running' >&2
